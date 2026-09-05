@@ -1,0 +1,17 @@
+{
+  "KPackageStructure": "Plasma/Applet",
+  "KPlugin": {
+    "Id": "de.lukasb04.datafeedpanel",
+    "Name": "Data Feed Panel",
+    "Description": "Displays a value (number or text) from a JSON API endpoint.",
+    "Icon": "view-statistics",
+    "Version": "1.0.0",
+    "License": "MIT",
+    "Authors": [
+      {
+        "Name": "lukas111222"
+      }
+    ]
+  },
+  "X-Plasma-API-Minimum-Version": "6.0"
+}

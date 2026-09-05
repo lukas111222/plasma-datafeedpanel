@@ -1,0 +1,29 @@
+name: CI Build
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure build tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y zip
+
+      - name: Build plasmoid
+        run: ./build.sh
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: plasmoid-bundle
+          path: dist/*.plasmoid
+          if-no-files-found: error

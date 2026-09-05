@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kcfg xmlns="http://www.kde.org/standards/kcfg/1.0"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:schemaLocation="http://www.kde.org/standards/kcfg/1.0
+                          http://www.kde.org/standards/kcfg/1.0/kcfg.xsd">
+  <kcfgfile name=""/>
+  <group name="General">
+    <entry name="customTitle" type="String">
+      <label>Custom widget title</label>
+      <default></default>
+    </entry>
+    <entry name="apiUrl" type="String">
+      <label>API endpoint URL</label>
+      <default>http://localhost:3000</default>
+    </entry>
+    <entry name="requestHeaders" type="String">
+      <label>HTTP request headers (one per line, format: Name: Value)</label>
+      <default></default>
+    </entry>
+    <entry name="jsonPaths" type="String">
+      <label>List of dot-separated JSON paths to read values from</label>
+      <default>value
+value2</default>
+    </entry>
+    <entry name="hoverJsonPaths" type="String">
+      <label>List of dot-separated JSON paths to show in hover tooltip</label>
+      <default></default>
+    </entry>
+    <entry name="valueCount" type="Int">
+      <label>How many values to display</label>
+      <default>2</default>
+      <min>1</min>
+      <max>20</max>
+    </entry>
+    <entry name="valueSeparator" type="String">
+      <label>Separator between displayed values</label>
+      <default> | </default>
+    </entry>
+    <entry name="hoverValueSeparator" type="String">
+      <label>Separator between hover tooltip values</label>
+      <default>\n</default>
+    </entry>
+    <entry name="refreshIntervalSeconds" type="Int">
+      <label>Refresh interval in seconds</label>
+      <default>60</default>
+      <min>1</min>
+      <max>86400</max>
+    </entry>
+    <entry name="displayWidth" type="Int">
+      <label>Display width in pixels for panel view</label>
+      <default>140</default>
+      <min>40</min>
+      <max>2000</max>
+    </entry>
+    <entry name="textAlignment" type="String">
+      <label>Horizontal alignment of panel text</label>
+      <default>center</default>
+    </entry>
+  </group>
+</kcfg>
