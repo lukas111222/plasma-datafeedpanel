@@ -59,6 +59,19 @@ if [[ ! -f metadata.json ]]; then
   exit 1
 fi
 
+ORIGINAL_METADATA="$(mktemp)"
+RELEASE_SUCCEEDED=false
+cp metadata.json "$ORIGINAL_METADATA"
+
+cleanup() {
+  if [[ "$RELEASE_SUCCEEDED" != true ]]; then
+    cp "$ORIGINAL_METADATA" metadata.json
+  fi
+  rm -f "$ORIGINAL_METADATA"
+}
+
+trap cleanup EXIT
+
 if [[ ! -x ./build.sh ]]; then
   chmod +x ./build.sh
 fi
@@ -121,13 +134,20 @@ if [[ ! -f "$ARTIFACT" ]]; then
 fi
 
 if command -v sha256sum >/dev/null 2>&1; then
-  sha256sum "$ARTIFACT" > "$CHECKSUM_FILE"
+  (
+    cd dist
+    sha256sum "$(basename "$ARTIFACT")" > "$(basename "$CHECKSUM_FILE")"
+  )
 elif command -v shasum >/dev/null 2>&1; then
-  shasum -a 256 "$ARTIFACT" > "$CHECKSUM_FILE"
+  (
+    cd dist
+    shasum -a 256 "$(basename "$ARTIFACT")" > "$(basename "$CHECKSUM_FILE")"
+  )
 else
   echo "Error: Missing checksum tool. Install 'sha256sum' (coreutils) or 'shasum'." >&2
   exit 1
 fi
 
+RELEASE_SUCCEEDED=true
 echo "Release artifact: $ARTIFACT"
 echo "Checksum file:   $CHECKSUM_FILE"
