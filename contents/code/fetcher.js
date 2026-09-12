@@ -109,13 +109,29 @@ function fetchValues(url, paths, headers, callback) {
     }
 
     var xhr = new XMLHttpRequest();
-    xhr.open("GET", url);
-    xhr.timeout = 10000;
+    var completed = false;
 
-    for (var headerName in normalizedHeaders) {
-        if (Object.prototype.hasOwnProperty.call(normalizedHeaders, headerName)) {
-            xhr.setRequestHeader(headerName, normalizedHeaders[headerName]);
+    function complete(result) {
+        if (completed) {
+            return;
         }
+
+        completed = true;
+        callback(result);
+    }
+
+    try {
+        xhr.open("GET", url);
+        xhr.timeout = 10000;
+
+        for (var headerName in normalizedHeaders) {
+            if (Object.prototype.hasOwnProperty.call(normalizedHeaders, headerName)) {
+                xhr.setRequestHeader(headerName, normalizedHeaders[headerName]);
+            }
+        }
+    } catch (error) {
+        complete({ ok: false, error: String(error) });
+        return;
     }
 
     xhr.onreadystatechange = function() {
@@ -124,26 +140,33 @@ function fetchValues(url, paths, headers, callback) {
         }
 
         if (xhr.status < 200 || xhr.status >= 300) {
-            callback({ ok: false, error: "HTTP " + xhr.status });
+            complete({ ok: false, error: "HTTP " + xhr.status });
             return;
         }
 
         try {
             var payload = JSON.parse(xhr.responseText);
             var displayValues = mapDisplayValues(payload, normalizedPaths);
-            callback({ ok: true, values: displayValues });
+            complete({ ok: true, values: displayValues });
         } catch (error) {
-            callback({ ok: false, error: String(error) });
+            complete({ ok: false, error: String(error) });
         }
     };
 
     xhr.onerror = function() {
-        callback({ ok: false, error: "Network error" });
+        complete({ ok: false, error: "Network error" });
     };
 
     xhr.ontimeout = function() {
-        callback({ ok: false, error: "Timeout" });
+        complete({ ok: false, error: "Timeout" });
     };
 
-    xhr.send();
+    try {
+        xhr.send();
+    } catch (error) {
+        complete({ ok: false, error: String(error) });
+        return null;
+    }
+
+    return xhr;
 }

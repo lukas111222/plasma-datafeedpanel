@@ -12,6 +12,8 @@ PlasmoidItem {
     property string displayValue: placeholderText
     property string hoverDisplayValue: placeholderText
     property bool isFetching: false
+    property int fetchGeneration: 0
+    property var activeRequest: null
 
     readonly property string configuredTitle: {
         var customTitle = String(plasmoid.configuration.customTitle || "").trim();
@@ -87,8 +89,8 @@ PlasmoidItem {
     }
 
     readonly property string configuredUrl: {
-        var url = plasmoid.configuration.apiUrl;
-        return url && url.length > 0 ? url : "http://localhost:3000";
+        var url = String(plasmoid.configuration.apiUrl || "").trim();
+        return url.length > 0 ? url : "http://localhost:3000";
     }
 
     readonly property var configuredJsonPaths: {
@@ -210,8 +212,17 @@ PlasmoidItem {
         }
 
         root.isFetching = true;
-        Fetcher.fetchValues(root.configuredUrl, requestPaths, root.configuredRequestHeaders, function(result) {
+        root.fetchGeneration += 1;
+        var requestGeneration = root.fetchGeneration;
+        fetchWatchdog.restart();
+        root.activeRequest = Fetcher.fetchValues(root.configuredUrl, requestPaths, root.configuredRequestHeaders, function(result) {
+            if (requestGeneration !== root.fetchGeneration) {
+                return;
+            }
+
             root.isFetching = false;
+            root.activeRequest = null;
+            fetchWatchdog.stop();
             if (result.ok) {
                 var valuesByPath = {};
                 for (var i = 0; i < requestPaths.length; i++) {
@@ -243,6 +254,21 @@ PlasmoidItem {
         });
     }
 
+    function abortActiveRequest() {
+        if (root.activeRequest) {
+            root.activeRequest.abort();
+            root.activeRequest = null;
+        }
+    }
+
+    function restartFetch() {
+        root.fetchGeneration += 1;
+        root.abortActiveRequest();
+        root.isFetching = false;
+        fetchWatchdog.stop();
+        root.fetchAndUpdate();
+    }
+
     Timer {
         id: pollTimer
         interval: root.configuredIntervalMs
@@ -252,40 +278,57 @@ PlasmoidItem {
         onTriggered: root.fetchAndUpdate()
     }
 
+    Timer {
+        id: fetchWatchdog
+        interval: 15000
+        repeat: false
+        onTriggered: {
+            if (!root.isFetching) {
+                return;
+            }
+
+            root.fetchGeneration += 1;
+            root.abortActiveRequest();
+            root.isFetching = false;
+            console.warn("Data Feed Panel fetch timed out without a response; retrying");
+            root.fetchAndUpdate();
+        }
+    }
+
     Connections {
         target: plasmoid.configuration
 
         function onApiUrlChanged() {
-            root.fetchAndUpdate();
+            root.restartFetch();
         }
 
         function onJsonPathsChanged() {
-            root.fetchAndUpdate();
+            root.restartFetch();
         }
 
         function onRequestHeadersChanged() {
-            root.fetchAndUpdate();
+            root.restartFetch();
         }
 
         function onHoverJsonPathsChanged() {
-            root.fetchAndUpdate();
+            root.restartFetch();
         }
 
         function onValueCountChanged() {
-            root.fetchAndUpdate();
+            root.restartFetch();
         }
 
         function onValueSeparatorChanged() {
-            root.fetchAndUpdate();
+            root.restartFetch();
         }
 
         function onHoverValueSeparatorChanged() {
-            root.fetchAndUpdate();
+            root.restartFetch();
         }
 
         function onRefreshIntervalSecondsChanged() {
             pollTimer.restart();
-            root.fetchAndUpdate();
+            root.restartFetch();
         }
     }
 }

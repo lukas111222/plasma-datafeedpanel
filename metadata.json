@@ -5,7 +5,7 @@
     "Name": "Data Feed Panel",
     "Description": "Displays a value (number or text) from a JSON API endpoint.",
     "Icon": "view-statistics",
-    "Version": "1.0.0",
+    "Version": "1.0.1",
     "License": "MIT",
     "Authors": [
       {
