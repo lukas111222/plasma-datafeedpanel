@@ -18,7 +18,7 @@ This Plasma 6 plasmoid polls a JSON API endpoint, extracts one or more values vi
 - Placeholder output (`--`) during startup and on errors
 - Overlap protection for slow requests
 
-## Expected API Contract
+## Expected API Output
 
 Default payload:
 
@@ -31,7 +31,48 @@ Default payload:
 
 Each target value can be a number or a string. Empty strings are treated as invalid.
 
-## Local Install (Plasma 6)
+## Install .plasmoid Bundle
+
+Install on a client:
+
+```bash
+kpackagetool6 -t Plasma/Applet -i dist/de.lukasb04.datafeedpanel-<version>.plasmoid
+```
+
+Update on a client:
+
+```bash
+kpackagetool6 -t Plasma/Applet -u dist/de.lukasb04.datafeedpanel-<version>.plasmoid
+```
+
+To create an instance of the widget in Plasma:
+
+1. Open panel edit mode.
+2. Add widgets.
+3. Search for `Data Feed Panel`.
+4. Place it on the panel.
+
+## Configuration
+
+Widget settings expose:
+
+- API URL
+- HTTP request headers (one header per line, format `Name: Value`)
+- Title
+- JSON paths list (line-, comma-, or semicolon-separated)
+- Hover JSON paths list (line-, comma-, or semicolon-separated)
+- Number of values to display
+- Separator between displayed values
+- Hover separator between tooltip values
+- Refresh interval in seconds
+- Display width in pixels (panel view)
+- Text alignment (left, center, right)
+
+Invalid values or fetch/parsing errors display `--` until a successful fetch occurs.
+
+## Build
+
+### Local Install
 
 From the project root:
 
@@ -45,20 +86,13 @@ If it was already installed, update with:
 kpackagetool6 -t Plasma/Applet -u .
 ```
 
-Then add the widget in Plasma:
-
-1. Open panel edit mode.
-2. Add widgets.
-3. Search for `Data Feed Panel`.
-4. Place it on the panel.
-
 Optional quick preview outside panel integration:
 
 ```bash
 plasmoidviewer -a de.lukasb04.datafeedpanel
 ```
 
-## Build .plasmoid Bundle
+### Build .plasmoid Bundle
 
 Create an installable bundle from the project root:
 
@@ -76,19 +110,7 @@ Requirements:
 
 - `zip` must be installed.
 
-Install on a client:
-
-```bash
-kpackagetool6 -t Plasma/Applet -i dist/de.lukasb04.datafeedpanel-0.1.0.plasmoid
-```
-
-Update on a client:
-
-```bash
-kpackagetool6 -t Plasma/Applet -u dist/de.lukasb04.datafeedpanel-0.1.0.plasmoid
-```
-
-## Create Release Artifact
+### Create Release Artifact
 
 Create a new release bundle from the project root:
 
@@ -121,7 +143,7 @@ Result files:
 - `dist/<plugin-id>-<new-version>.plasmoid`
 - `dist/<plugin-id>-<new-version>.plasmoid.sha256`
 
-## GitHub Actions (Build + Release)
+### GitHub Actions (Build + Release)
 
 This repository includes two workflows:
 
@@ -147,34 +169,3 @@ git push origin v0.2.0
 ```
 
 3. The release workflow builds and publishes assets automatically.
-
-Important:
-
-- Tag and metadata version must match exactly, otherwise release fails.
-- `workflow_dispatch` can run the workflow manually, but publishing is only done for tag runs.
-
-## Configuration
-
-Widget settings expose:
-
-- API URL
-- HTTP request headers (one header per line, format `Name: Value`)
-- Title
-- JSON paths list (line-, comma-, or semicolon-separated)
-- Hover JSON paths list (line-, comma-, or semicolon-separated)
-- Number of values to display
-- Separator between displayed values
-- Hover separator between tooltip values
-- Refresh interval in seconds
-- Display width in pixels (panel view)
-- Text alignment (left, center, right)
-
-Invalid values or fetch/parsing errors display `--` until a successful fetch occurs.
-
-## Verification Checklist
-
-1. API returns valid JSON with a number or text value and the widget shows that value.
-2. Update API value and confirm the panel updates within the configured interval.
-3. Break the API (stop server/return invalid JSON) and confirm `--` is shown.
-4. Restore API and confirm the widget recovers automatically.
-5. Change URL/path/interval in configuration and verify behavior updates accordingly.
